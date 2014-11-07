@@ -28,7 +28,7 @@ public final class Server {
     private static final int DEFAULT_PORT = 8066;
     private static final int DEFAULT_MANAGER_PORT = 9066;
     private static final int DEFAULT_PROCESSORS = Runtime.getRuntime().availableProcessors();
-    private static final String DEFAULT_CHARSET = "utf-8";
+    private static final String DEFAULT_CHARSET = "utf8";
     private static final long DEFAULT_IDLE_TIMEOUT = 8 * 3600 * 1000L;
     private static final int DEFAULT_CONNECTION_POOL_SIZE = 16;
     private static final long DEFAULT_PROCESSOR_CHECK_PERIOD = 15 * 1000L;
@@ -57,7 +57,7 @@ public final class Server {
     private long clusterHeartbeatTimeout;
     private int clusterHeartbeatRetry;
 
-    public Server(ServerConfig model) {
+    public Server(ServerConfig config) {
         this.serverPort = DEFAULT_PORT;
         this.managerPort = DEFAULT_MANAGER_PORT;
         this.serverExecutor = DEFAULT_PROCESSORS * 2;
@@ -77,8 +77,8 @@ public final class Server {
         this.clusterHeartbeatTimeout = DEFAULT_CLUSTER_HEARTBEAT_TIMEOUT;
         this.clusterHeartbeatRetry = DEFAULT_CLUSTER_HEARTBEAT_RETRY;
 
-        // 模型到配置的初始化
-        this.init(model);
+        // 初始化
+        this.init(config);
     }
 
     public int getServerPort() {
@@ -145,40 +145,40 @@ public final class Server {
         return connectionPoolSize;
     }
 
-    protected void init(ServerConfig model) {
-        String serverPort = model.getServerPort();
+    protected void init(ServerConfig config) {
+        String serverPort = config.getServerPort();
         if (serverPort != null) {
             this.serverPort = Integer.parseInt(serverPort.trim());
         }
-        String managerPort = model.getManagerPort();
+        String managerPort = config.getManagerPort();
         if (managerPort != null) {
             this.managerPort = Integer.parseInt(managerPort.trim());
         }
-        String serverExecutor = model.getServerExecutor();
+        String serverExecutor = config.getServerExecutor();
         if (serverExecutor != null) {
             this.serverExecutor = Integer.parseInt(serverExecutor.trim());
         }
-        String managerExecutor = model.getManagerExecutor();
+        String managerExecutor = config.getManagerExecutor();
         if (managerExecutor != null) {
             this.managerExecutor = Integer.parseInt(managerExecutor.trim());
         }
-        String processors = model.getProcessors();
+        String processors = config.getProcessors();
         if (processors != null) {
             this.processors = Integer.parseInt(processors.trim());
         }
-        String processorExecutor = model.getProcessorExecutor();
+        String processorExecutor = config.getProcessorExecutor();
         if (processorExecutor != null) {
             this.processorExecutor = Integer.parseInt(processorExecutor.trim());
         }
-        String charset = model.getCharset();
+        String charset = config.getCharset();
         if (charset != null) {
             this.charset = charset.trim();
         }
-        String idleTimeout = model.getIdleTimeout();
+        String idleTimeout = config.getIdleTimeout();
         if (idleTimeout != null) {
             this.idleTimeout = Long.parseLong(idleTimeout.trim()) * 1000L;
         }
-        String connectionPoolSize = model.getConnectionPoolSize();
+        String connectionPoolSize = config.getConnectionPoolSize();
         if (connectionPoolSize != null) {
             this.connectionPoolSize = Integer.parseInt(connectionPoolSize);
         }

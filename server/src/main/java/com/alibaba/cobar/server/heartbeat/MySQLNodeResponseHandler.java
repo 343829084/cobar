@@ -36,13 +36,16 @@ public class MySQLNodeResponseHandler implements ResponseHandler {
     private static final long ERROR_HEARTBEAT = 100L;
 
     private MySQLNodeConnection connection;
-    private CommandPacket packet;
     private AtomicInteger errorCount;
+    private CommandPacket packet;
+
+    public MySQLNodeResponseHandler() {
+        this.errorCount = new AtomicInteger(0);
+        this.packet = getHeartbeatPacket();
+    }
 
     public void setConnection(MySQLNodeConnection connection) {
         this.connection = connection;
-        this.packet = getHeartbeatPacket();
-        this.errorCount = new AtomicInteger(0);
     }
 
     public void connectionAquired() {
@@ -78,33 +81,44 @@ public class MySQLNodeResponseHandler implements ResponseHandler {
 
     public void error(int code, Throwable t) {
         connection.close();
-        if (errorCount.get() < RETRY_TIMES) {
-            errorCount.incrementAndGet();
-            newHeartbeat(ERROR_HEARTBEAT);
-        } else {
+        switch (code) {
+        case ErrorCode.ERR_IDLE_TIMEOUT:
             errorCount.set(0);
+            // timeout todo something
             newHeartbeat(NORMAL_HEARTBEAT);
+            break;
+        default:
+            if (errorCount.get() < RETRY_TIMES) {
+                errorCount.incrementAndGet();
+                newHeartbeat(ERROR_HEARTBEAT);
+            } else {
+                errorCount.set(0);
+                // errors todo something
+                newHeartbeat(NORMAL_HEARTBEAT);
+            }
         }
     }
 
     private void doHeartbeat(long delay) {
+        final MySQLNodeConnection mnc = this.connection;
         Timer timer = CobarContainer.getInstance().getTimer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                packet.write(connection);
+                packet.write(mnc);
             }
         }, delay);
     }
 
     private void newHeartbeat(long delay) {
+        final MySQLNodeConnection mnc = this.connection;
         Timer timer = CobarContainer.getInstance().getTimer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 MySQLNodeConnectionFactory factory = CobarContainer.getInstance().getMysqlNodeFactory();
                 try {
-                    factory.make(connection.getDataSource(), MySQLNodeResponseHandler.this);
+                    factory.make(mnc.getDataSource(), MySQLNodeResponseHandler.this);
                 } catch (Exception e) {
                     error(ErrorCode.ERR_CONNECT_SOCKET, e);
                 }

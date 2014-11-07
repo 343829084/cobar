@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.alibaba.cobar.server.model.DataSources.DataSource;
 import com.alibaba.cobar.server.net.BackendConnection;
+import com.alibaba.cobar.server.util.TimeUtil;
 
 /**
  * @author xianmao.hexm
@@ -29,7 +30,6 @@ public class MySQLConnection extends BackendConnection {
     private long threadId;
     private String charset;
     private long clientFlags;
-    private boolean isAuthenticated;
     private MySQLResponseHandler responseHandler;
     private DataSource dataSource;
     private MySQLConnectionPool pool;
@@ -63,14 +63,6 @@ public class MySQLConnection extends BackendConnection {
         this.clientFlags = clientFlags;
     }
 
-    public boolean isAuthenticated() {
-        return isAuthenticated;
-    }
-
-    public void setAuthenticated(boolean isAuthenticated) {
-        this.isAuthenticated = isAuthenticated;
-    }
-
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -93,6 +85,12 @@ public class MySQLConnection extends BackendConnection {
 
     public void setInThePool(boolean inThePool) {
         this.inThePool = inThePool;
+    }
+
+    @Override
+    public boolean isIdleTimeout() {
+        long timeout = (inThePool && pool != null) ? pool.getIdleTimeout() : idleTimeout;
+        return TimeUtil.currentTimeMillis() > (Math.max(statistic.getLastWriteTime(), statistic.getLastReadTime()) + timeout);
     }
 
     public void release() {

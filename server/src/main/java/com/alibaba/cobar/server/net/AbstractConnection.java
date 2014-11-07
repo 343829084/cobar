@@ -123,7 +123,7 @@ public abstract class AbstractConnection implements NIOConnection {
         this.idleTimeout = idleTimeout;
     }
 
-    public boolean isIdleTimeout(long idleTimeout) {
+    public boolean isIdleTimeout() {
         return TimeUtil.currentTimeMillis() > (Math.max(statistic.getLastWriteTime(), statistic.getLastReadTime()) + idleTimeout);
     }
 
@@ -276,6 +276,13 @@ public abstract class AbstractConnection implements NIOConnection {
             }
         } finally {
             lock.unlock();
+        }
+    }
+
+    @Override
+    public void idleCheck() {
+        if (isIdleTimeout()) {
+            error(ErrorCode.ERR_IDLE_TIMEOUT, new RuntimeException("idle timeout"));
         }
     }
 

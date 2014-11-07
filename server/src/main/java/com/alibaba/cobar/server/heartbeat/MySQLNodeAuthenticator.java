@@ -76,7 +76,6 @@ public class MySQLNodeAuthenticator implements NIOHandler {
         } else {
             switch (data[4]) {
             case OkPacket.FIELD_COUNT:
-                source.setAuthenticated(true);
                 source.setHandler(new MySQLNodeDispatcher(source));
                 source.connectionAquired();
                 break;

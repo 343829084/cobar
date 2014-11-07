@@ -79,7 +79,6 @@ public class MySQLAuthenticator implements NIOHandler {
         } else { // 处理认证结果
             switch (data[4]) {
             case OkPacket.FIELD_COUNT:
-                source.setAuthenticated(true);
                 source.setHandler(new MySQLDispatcher(source));
                 source.connectionAquired();
                 break;

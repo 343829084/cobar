@@ -38,17 +38,14 @@ public class CobarNodeResponseHandler implements ResponseHandler {
     private static final long ERROR_HEARTBEAT = 100L;
 
     private CobarNodeConnection connection;
-    private HeartbeatPacket packet;
     private AtomicLong heartbeatId;
     private AtomicInteger errorCount;
+    private HeartbeatPacket packet;
 
     public CobarNodeResponseHandler() {
-        HeartbeatPacket packet = new HeartbeatPacket();
-        packet.packetId = 0;
-        packet.command = AbstractPacket.COM_HEARTBEAT;
-        this.packet = packet;
         this.heartbeatId = new AtomicLong(0L);
         this.errorCount = new AtomicInteger(0);
+        this.packet = getHeartbeatPacket();
     }
 
     public void setConnection(CobarNodeConnection connection) {
@@ -93,40 +90,58 @@ public class CobarNodeResponseHandler implements ResponseHandler {
     public void error(int code, Throwable t) {
         connection.close();
         Cluster.Node node = connection.getNode();
-        if (node.getOnline().get() && errorCount.get() < RETRY_TIMES) {
-            errorCount.incrementAndGet();
-            newHeartbeat(ERROR_HEARTBEAT);
-        } else {
+        switch (code) {
+        case ErrorCode.ERR_IDLE_TIMEOUT: {
             errorCount.set(0);
             node.getOnline().compareAndSet(true, false);
             newHeartbeat(NORMAL_HEARTBEAT);
+            break;
+        }
+        default:
+            if (node.getOnline().get() && errorCount.get() < RETRY_TIMES) {
+                errorCount.incrementAndGet();
+                newHeartbeat(ERROR_HEARTBEAT);
+            } else {
+                errorCount.set(0);
+                node.getOnline().compareAndSet(true, false);
+                newHeartbeat(NORMAL_HEARTBEAT);
+            }
         }
     }
 
     private void doHeartbeat(long delay) {
+        final CobarNodeConnection cnc = this.connection;
         Timer timer = CobarContainer.getInstance().getTimer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 packet.id = heartbeatId.incrementAndGet();
-                packet.write(connection);
+                packet.write(cnc);
             }
         }, delay);
     }
 
     private void newHeartbeat(long delay) {
+        final CobarNodeConnection cnc = this.connection;
         Timer timer = CobarContainer.getInstance().getTimer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 CobarNodeConnectionFactory factory = CobarContainer.getInstance().getCobarNodeFactory();
                 try {
-                    factory.make(connection.getNode(), CobarNodeResponseHandler.this);
+                    factory.make(cnc.getNode(), CobarNodeResponseHandler.this);
                 } catch (Exception e) {
                     error(ErrorCode.ERR_CONNECT_SOCKET, e);
                 }
             }
         }, delay);
+    }
+
+    private HeartbeatPacket getHeartbeatPacket() {
+        HeartbeatPacket packet = new HeartbeatPacket();
+        packet.packetId = 0;
+        packet.command = AbstractPacket.COM_HEARTBEAT;
+        return packet;
     }
 
 }

@@ -19,8 +19,7 @@
     <!-- 系统参数定义，服务端口、管理端口，处理器个数、线程池等。 -->
     <server>
         <property name="serverPort">8066</property>
-        <property name="serverExecutor">8</property>
-        <property name="managerExecutor">8</property>
+        <property name="serverExecutor">16</property>
         <property name="processors">4</property>
         <property name="processorExecutor">16</property>
         <property name="charset">utf8</property>

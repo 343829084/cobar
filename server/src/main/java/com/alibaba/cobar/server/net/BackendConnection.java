@@ -63,13 +63,6 @@ public abstract class BackendConnection extends AbstractConnection {
         processor.addBackend(this);
     }
 
-    @Override
-    public void idleCheck() {
-        if (isIdleTimeout(idleTimeout)) {
-            close();
-        }
-    }
-
     public String toString() {
         StringBuilder sb = new StringBuilder().append("[class=")
                                               .append(getClass().getSimpleName())

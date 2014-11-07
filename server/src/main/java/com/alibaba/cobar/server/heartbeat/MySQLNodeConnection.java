@@ -28,7 +28,6 @@ public class MySQLNodeConnection extends BackendConnection {
 
     private String charset;
     private long clientFlags;
-    private boolean isAuthenticated;
     private DataSource dataSource;
     private MySQLNodeResponseHandler responseHandler;
 
@@ -50,14 +49,6 @@ public class MySQLNodeConnection extends BackendConnection {
 
     public void setClientFlags(long clientFlags) {
         this.clientFlags = clientFlags;
-    }
-
-    public boolean isAuthenticated() {
-        return isAuthenticated;
-    }
-
-    public void setAuthenticated(boolean isAuthenticated) {
-        this.isAuthenticated = isAuthenticated;
     }
 
     public DataSource getDataSource() {

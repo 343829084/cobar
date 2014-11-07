@@ -45,7 +45,7 @@ public class MySQLNodeConnectionFactory extends BackendConnectionFactory {
         c.setHost(machine.getHost());
         c.setPort(instance.getPort());
         c.setClientFlags(getClientFlags());
-        c.setHandler(new MySQLNodeDispatcher(c));
+        c.setHandler(new MySQLNodeAuthenticator(c));
         c.setWriteQueue(new BufferQueue<ByteBuffer>(writeQueueCapacity));
         c.setIdleTimeout(idleTimeout);
         c.setDataSource(dataSource);

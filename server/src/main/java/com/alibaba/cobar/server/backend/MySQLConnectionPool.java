@@ -32,12 +32,14 @@ import com.alibaba.cobar.server.model.DataSources.DataSource;
 public class MySQLConnectionPool {
 
     private static final Logger ALARM = Logger.getLogger("alarm");
+    private static final long DEFAULT_IDLE_TIMEOUT = 10 * 60 * 1000L;
 
     private final DataSource dataSource;
     private final int size;
     private final MySQLConnection[] items;
     private final MySQLConnectionFactory factory;
     private final ReentrantLock lock = new ReentrantLock();
+    private long idleTimeout;
     private int activeCount;
     private int idleCount;
 
@@ -46,6 +48,7 @@ public class MySQLConnectionPool {
         this.size = size;
         this.items = new MySQLConnection[size];
         this.factory = new MySQLConnectionFactory();
+        this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
     }
 
     public DataSource getDataSource() {
@@ -54,6 +57,10 @@ public class MySQLConnectionPool {
 
     public int getSize() {
         return size;
+    }
+
+    public long getIdleTimeout() {
+        return idleTimeout;
     }
 
     public int getActiveCount() {

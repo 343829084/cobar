@@ -27,6 +27,7 @@ import com.alibaba.cobar.server.net.packet.HandshakePacket;
 import com.alibaba.cobar.server.util.CharsetUtil;
 import com.alibaba.cobar.server.util.RandomUtil;
 import com.alibaba.cobar.server.util.StringUtil;
+import com.alibaba.cobar.server.util.TimeUtil;
 
 /**
  * @author xianmao.hexm
@@ -114,10 +115,9 @@ public abstract class FrontendConnection extends AbstractConnection {
     }
 
     @Override
-    public void idleCheck() {
-        if (isIdleTimeout(isAuthenticated ? idleTimeout : AUTH_TIMEOUT)) {
-            close();
-        }
+    public boolean isIdleTimeout() {
+        long timeout = isAuthenticated ? idleTimeout : AUTH_TIMEOUT;
+        return TimeUtil.currentTimeMillis() > (Math.max(statistic.getLastWriteTime(), statistic.getLastReadTime()) + timeout);
     }
 
     public void writeErrMessage(int errno, String msg) {

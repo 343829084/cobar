@@ -75,12 +75,4 @@ public class CobarNodeConnection extends BackendConnection {
         responseHandler.error(code, t);
     }
 
-    @Override
-    public void idleCheck() {
-        if (isIdleTimeout(idleTimeout)) {
-            close();
-            node.getOnline().compareAndSet(true, false);
-        }
-    }
-
 }
